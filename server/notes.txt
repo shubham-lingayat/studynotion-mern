@@ -1,0 +1,4 @@
+Following packages are installed:
+express, mongoose, nodemon, cookie-parser, nodemailer, otp-generator, dotenv, jsonwebtoken, bcrypt, cloudinary, razorpay
+
+utils contains functions which are created by me
