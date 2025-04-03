@@ -132,26 +132,29 @@ exports.deleteSubSection = async (req, res) => {
       });
     }
 
+
     // delete subsection id from section
     const sectionUpdate = await Section.findByIdAndUpdate(
       { _id: sectionId },
       {
         $pull: {
-          subSection: SubSectionDetails._id,
+          subSection: subSectionId,
         },
       },
       { new: true }
     ).populate();
 
-    // delete entry in sub-section
-    const SubSectionDetails = await SubSection.findByIdAndDelete({
-      _id: subSectionId,
-    });
+    
+      // delete entry in sub-section
+      const SubSectionDetails = await SubSection.findByIdAndDelete({
+        _id: subSectionId,
+      });
 
     // return response
     return res.status(200).json({
       success: true,
       message: "Sub Section deleted successfully",
+      data: sectionUpdate
     });
   } catch (err) {
     console.log(err);

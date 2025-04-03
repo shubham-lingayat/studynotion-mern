@@ -1,5 +1,5 @@
 const Course = require("../models/Course");
-const categories = require("../models/Categories");
+const Categories = require("../models/Categories");
 const User = require("../models/User");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 
@@ -12,21 +12,24 @@ exports.createCourse = async (req, res) => {
     // Data fetch from request body
     const {
       courseName,
-      courseDecsription,
+      courseDescription,
       whatYouWillLearn,
       price,
-      tag,
-      status,
-      instructions,
       category,
     } = req.body;
+
+    const tag = JSON.parse(req.body.tag);
+    const instructions = JSON.parse(req.body.instructions);
+
+    // Status may changes so, that will not come with const variable
+    let status = "";
 
     // file fetch
     const thumbnail = req.files.thumbnailImage;
     // data validation
     if (
       !courseName ||
-      !courseDecsription ||
+      !courseDescription ||
       !whatYouWillLearn ||
       !price ||
       !category ||
@@ -56,7 +59,7 @@ exports.createCourse = async (req, res) => {
     }
 
     // category validation
-    const categoryDetails = await categories.findById(category);
+    const categoryDetails = await Categories.findById(category);
     if (!categoryDetails) {
       return res.status(404).json({
         success: false,
@@ -69,7 +72,7 @@ exports.createCourse = async (req, res) => {
       process.env.FOLDER_NAME
     );
     // create course entry in DB
-    const newCourse = await Course.create({
+    let newCourse = await Course.create({
       courseName,
       courseDescription,
       instructor: instructorDetails._id,
@@ -93,7 +96,7 @@ exports.createCourse = async (req, res) => {
       { new: true }
     );
     // create course entry in category
-    await categories.findByIdAndUpdate(
+    await Categories.findByIdAndUpdate(
       { _id: categoryDetails._id },
       {
         $push: {
@@ -106,6 +109,7 @@ exports.createCourse = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Course Created Successfully",
+      data: newCourse
     });
   } catch (err) {
     console.log(err);

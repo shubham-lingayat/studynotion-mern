@@ -47,7 +47,7 @@ exports.showAllcategories = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "All categories fetched successfully!",
-      data: allcategories,
+      data: allcategories
     });
   } catch (err) {
     console.log(err);

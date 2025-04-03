@@ -1,6 +1,7 @@
 // CRUD Operations performed by Instructor
 const Section = require("../models/Section");
 const Course = require("../models/Course");
+const subSection = require('../models/subSection');
 
 exports.createSection = async (req, res) => {
   try {
@@ -29,7 +30,7 @@ exports.createSection = async (req, res) => {
       .populate({
         path: "courseContent",
         populate: {
-          path: "subSections",
+          path: "subSection",
           model: "subSection",
         },
       })
@@ -40,7 +41,7 @@ exports.createSection = async (req, res) => {
     // return response
     return res.status(200).json({
       success: true,
-      message: "Course created successfully",
+      message: "Section created successfully",
       updatedCourseDetails,
     });
   } catch (err) {
@@ -90,14 +91,34 @@ exports.updateSection = async (req, res) => {
 exports.deleteSection = async (req, res) => {
   try {
     // get Id from req.body
-    const { sectionId } = req.params;
+    const { sectionId, courseId } = req.body;
     // find id and delete
-    await Section.findByIdAndDelete(sectionId);
-    // TODO: do we need to delete entry (object id) from Course DB ?
+    const deletedSection = await Section.findByIdAndDelete(sectionId);
+
+    if (!deletedSection) {
+      return res.status(400).json({
+        success:false,
+        message:"Section not found"
+      })
+    }
+
+     // Remove the section reference from the course
+     const updatedCourse = await Course.findByIdAndUpdate(
+      courseId,
+      { $pull: { courseContent: sectionId } }, // Remove section from courseContent array
+      { new: true } // Return updated document
+    ).populate({
+      path: "courseContent",
+      populate: {
+        path: "subSection",
+      },
+    });
+
     // return response
     return res.status(200).json({
       success: true,
       message: "Section Deleted Successfully",
+      data: updatedCourse
     });
   } catch (err) {
     console.log(err);
